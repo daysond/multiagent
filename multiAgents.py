@@ -105,8 +105,8 @@ class ReflexAgent(Agent):
         # print('newFood:\n', newFoodList)
         # print('ghostPositions: ', ghostPositions)
         # print('successorGameState.score: ', successorGameState.getScore())
-        print('newScaredTimes: ', newScaredTimes)
-        
+        # print('newScaredTimes: ', newScaredTimes)
+        # print('score: ', successorGameState.getScore())
         #shake the pacman out of the stuch position  
         shake = random.random()
 
@@ -124,7 +124,7 @@ class ReflexAgent(Agent):
         
         score = successorGameState.getScore()
         # score = 0  
-
+        print("min distance ghost: ", minDistanceGhost)
         # keep distant from ghost if not scared
         if newScaredTimes[0] < 5 and minDistanceGhost < 3:
             score += minDistanceGhost
@@ -137,7 +137,7 @@ class ReflexAgent(Agent):
         for foodPos in newFoodList:
             minDistanceFood = min(minDistanceFood, util.manhattanDistance(foodPos, newPos))
         
-        
+        print("min distance food: ", minDistanceFood)
         # go towards food 
         score -= (1+shake) * minDistanceFood
         
