@@ -49,7 +49,7 @@ class ReflexAgent(Agent):
         chosenIndex = random.choice(bestIndices) # Pick randomly among the best
 
         "Add more of your code here if you want to"
-
+        print(f"chosen : {legalMoves[chosenIndex]}\n")
         return legalMoves[chosenIndex]
 
     def evaluationFunction(self, currentGameState: GameState, action):
@@ -108,114 +108,77 @@ class ReflexAgent(Agent):
         # print('newScaredTimes: ', newScaredTimes)
         # print('score: ', successorGameState.getScore())
         #shake the pacman out of the stuch position  
-        shake = random.random()
+        # shake = random.random()
 
-        minDistanceGhost = float("+inf")
-        for position in ghostPositions:
-            minDistanceGhost = min(minDistanceGhost, util.manhattanDistance(newPos, position))
+        # minDistanceGhost = float("+inf")
+        # for position in ghostPositions:
+        #     minDistanceGhost = min(minDistanceGhost, util.manhattanDistance(newPos, position))
 
-        # pac man meets ghost, game over
-        if minDistanceGhost == 0:
-            return float("-inf")
+        # # pac man meets ghost, game over
+        # if minDistanceGhost == 0:
+        #     return float("-inf")
         
-        # win state
-        if successorGameState.isWin():
-            return float("+inf")
+        # # win state
+        # if successorGameState.isWin():
+        #     return float("+inf")
         
-        score = successorGameState.getScore()
-        # score = 0  
-        print("min distance ghost: ", minDistanceGhost)
-        # keep distant from ghost if not scared
-        if newScaredTimes[0] < 5 and minDistanceGhost < 3:
-            score += minDistanceGhost
+        # score = successorGameState.getScore()
+        # # score = 0  
+        # print("min distance ghost: ", minDistanceGhost)
+        # # keep distant from ghost if not scared
+        # if newScaredTimes[0] < 5 and minDistanceGhost < 3:
+        #     score += minDistanceGhost
         
-        # try to eat ghost when its scared
-        if 40 > newScaredTimes[0] >= 5:
-            score -= (2+shake) * minDistanceGhost
+        # # try to eat ghost when its scared
+        # if 40 > newScaredTimes[0] >= 5:
+        #     score -= (2+shake) * minDistanceGhost
         
-        minDistanceFood = float("+inf")
-        for foodPos in newFoodList:
-            minDistanceFood = min(minDistanceFood, util.manhattanDistance(foodPos, newPos))
+        # minDistanceFood = float("+inf")
+        # for foodPos in newFoodList:
+        #     minDistanceFood = min(minDistanceFood, util.manhattanDistance(foodPos, newPos))
         
-        print("min distance food: ", minDistanceFood)
-        # go towards food 
-        score -= (1+shake) * minDistanceFood
+        # print("min distance food: ", minDistanceFood)
+        # # go towards food 
+        # score -= (1+shake) * minDistanceFood
         
-        # get food
-        if(successorGameState.getNumFood() < currentGameState.getNumFood()):
-            score += 5
+        # # get food
+        # if(successorGameState.getNumFood() < currentGameState.getNumFood()):
+        #     score += 5
 
-        # keep pac man moving
-        if action == Directions.STOP:
-            score -= 10
+        # # keep pac man moving
+        # if action == Directions.STOP:
+        #     score -= 10
         
-        return score
+        # return score
     
      # s = w 1/food -  w 1/ghost
         
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        ###### sol 1 ######
-        
-        # minDist = 999999
-        # for point in newFood:
-        #     minDist = min(minDist, manhattanDistance(newPos, point))
+        shake = random.random()
+        #   pacman gets higher score if foods eaten
+        hasEatenFood = int(successorGameState.getNumFood() < currentGameState.getNumFood()) * 10
+        stopPenalty = -10 * int(action == Directions.STOP)
+        newFood = successorGameState.getFood().asList()
+        minFoodDistance = float("inf")
+        for foodPosition in newFood:
+            minFoodDistance = min(minFoodDistance, manhattanDistance(newPos, foodPosition))
+        # if minFoodDistance % 2 == 0 and shake > 0.5:
+        #     print("adding")
+        #     minFoodDistance +=  1 
 
-        # ghostDanger = 0
-        # for ghost in successorGameState.getGhostPositions():
-        #     dist = max(4 - manhattanDistance(newPos, ghost), 0)
-        #     ghostDanger += dist*dist
-
-        # return successorGameState.getScore() + 10.0/minDist - ghostDanger
-        
-        
-        ###### sol 2 ######
-        # score = 0
-
-        # closestGhostPosition = newGhostStates[0].configuration.pos
-        # closestGhost = manhattanDistance(newPos, closestGhostPosition)
-
-        # # Minimize distance from pacman to food
-        # newFoodPositions = newFood.asList()
-        # foodDistances = [manhattanDistance(newPos, foodPosition) for foodPosition in newFoodPositions]
-
-        # if len(foodDistances) == 0:
-        #     return 0
-
-        # closestFood = min(foodDistances)
-
-        # # Stop action would reduce score because of the pacman's timer constraint
-        # if action == 'Stop':
-        #     score -= 50
-
-        # return successorGameState.getScore() + closestGhost / (closestFood * 10) + score
-    
-
-        ####### sol 3 #######
-        # newFood = successorGameState.getFood().asList()
-        # minFoodist = float("inf")
-        # for food in newFood:
-        #     minFoodist = min(minFoodist, manhattanDistance(newPos, food))
-
-        # # avoid ghost if too close
-        # for ghost in successorGameState.getGhostPositions():
-        #     if (manhattanDistance(newPos, ghost) < 2):
-        #         return -float('inf')
-        # # reciprocal
-        # return successorGameState.getScore() + 1.0/minFoodist
+        # stay away from the ghost unless scared
+        for ghostPosition in successorGameState.getGhostPositions():
+            if (manhattanDistance(newPos, ghostPosition) < 2 and newScaredTimes[0] < 3):
+                return -float('inf')
+        # minDistanceGhost = float("+inf")
+        # for position in ghostPositions:
+        #     minDistanceGhost = min(minDistanceGhost, util.manhattanDistance(newPos, position))
+        # reciprocal
+        # ghostTerm = 5 * int(newScaredTimes[0] < 3)/minDistanceGhost
+        newScore = 1 / minFoodDistance + int(hasEatenFood) + stopPenalty 
+        print(f"new score: {newScore}, fd: {minFoodDistance}, {hasEatenFood}, s? {stopPenalty} for action: {action}")
+        return  newScore
 
         
-        
-        return successorGameState.getScore()
 
 def scoreEvaluationFunction(currentGameState: GameState):
     """
