@@ -183,7 +183,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
             
             nextAgent = currentAgent + 1    #   index of next agent
             if nextAgent == numAgents:
-                nextAgent = 0               #   resets agent index to pacman
+                nextAgent = 0               #   resets agent index to pacman (max agent)
                 currentDepth += 1           #   keeping track of the depth explored
 
             actions = state.getLegalActions(currentAgent)
