@@ -69,16 +69,10 @@ class ReflexAgent(Agent):
         """
         # Useful information you can extract from a GameState (pacman.py)
         successorGameState = currentGameState.generatePacmanSuccessor(action)
-        # print(f'successorGameState:\n {successorGameState}')
         newPos = successorGameState.getPacmanPosition()
-        # print(f'newPos: {newPos}')
         newFood = successorGameState.getFood()
-        # print(f'newFood: \n {newFood}')
         newGhostStates = successorGameState.getGhostStates()
-        # print(f'newGhostStates: {[str(s)for s in newGhostStates]}')
         newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
-        # print(f'newScaredTimes: {newScaredTimes}')
-        # print("###############################################\n")
         "*** YOUR CODE HERE ***"
         
         #   pacman gets higher score if foods eaten
@@ -94,7 +88,7 @@ class ReflexAgent(Agent):
         for ghostPosition in successorGameState.getGhostPositions():
             minGhostDistance = min(minGhostDistance, manhattanDistance(newPos, ghostPosition))
         
-        # stay away from the ghost unless scared
+        #   stay away from the ghost unless scared
         danger = int (minGhostDistance < 2 and newScaredTimes[0] < 2) * 9999
         
         # for ghostPosition in successorGameState.getGhostPositions():
