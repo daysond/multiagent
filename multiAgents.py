@@ -166,111 +166,50 @@ class MinimaxAgent(MultiAgentSearchAgent):
         "*** YOUR CODE HERE ***"
         
         numAgents = gameState.getNumAgents()
-        lastAgentIndex = numAgents - 1
-        print(f"########depth: {self.depth} and last agent index is {lastAgentIndex} with total agent {numAgents}")
-        def maxValue(state: GameState, currentAgent, currentDepth, actionTaken):
-    
-            print(f"Max current depth: {currentDepth} and current agent {currentAgent}")
-            if currentAgent == numAgents: currentAgent = 0 # 1 round is done, resets agent to pacman
-            nextAgent = currentAgent + 1 # index of next agent
 
-            # terminal states
+        def maxValue(state: GameState, currentAgent, currentDepth, actionTaken):
+            #   terminal test
             if state.isWin() or state.isLose():
-                print("    Max terminal state!!!")
                 return self.evaluationFunction(state), actionTaken
             
-            v = -float("inf")
-            a = None
+            nextAgent = currentAgent + 1    #   index of next agent
             actions = state.getLegalActions(currentAgent)
-            scores = []
-            print(f"    max agent {currentAgent} expanding {len(actions)} states with nextagent {nextAgent} at depth {currentDepth}")
-            for action in actions:
-                print(f"    ****Agent {currentAgent} about to explore mini state of next agent {nextAgent} by taking {action}")
-                score = minValue(state.generateSuccessor(currentAgent, action), nextAgent, currentDepth, action)
-                scores.append(score[0])
+            #   gets a list of scores of the successor states
+            scores = [minValue(state.generateSuccessor(currentAgent, action), nextAgent, currentDepth, action)[0] for action in actions]
+
+            v = max(scores)
+            a = actions[scores.index(max(scores))]
             
-            maxval = max(scores)
-            print(f"    maxval: {maxval}")
-            v = maxval
-            
-            # a = maxval[1]
-            a = actions[scores.index(v)]
-            print(f"MAX returning {v} and {a}")
             return v, a
 
         def minValue(state: GameState, currentAgent, currentDepth, actionTaken):
-            print(f"Min current depth: {currentDepth} and current agent {currentAgent}")
+            #   terminal test
             if state.isWin() or state.isLose():
-                print("    Min terminal state!!!")
-                print(f"TERMINAL returning {self.evaluationFunction(state)} and {actionTaken}")
                 return self.evaluationFunction(state), actionTaken
-            nextAgent = currentAgent + 1
-            if nextAgent == numAgents:
-                nextAgent = 0
-                currentDepth += 1 # keeping track of the depth explored
-            v = float("inf")
-            a = None
-            actions = state.getLegalActions(currentAgent)
-            print(f"    min agent {currentAgent} expanding {len(actions)} states from {actionTaken}")
-            # print(f"actions: {actions} for {currentAgent} at {state}")
-            if currentDepth == self.depth and currentAgent == lastAgentIndex:
-                print(f"    last depth: {currentDepth} at agent {currentAgent}")
-                scores = [self.evaluationFunction(state.generateSuccessor(currentAgent, action)) for action in actions]
-                v = min(scores)
-                a = actions[scores.index(v)]          
-            else:
-                scores =[maxValue(state.generateSuccessor(currentAgent, action), nextAgent, currentDepth, action)[0] for action in actions] if nextAgent == 0 else [minValue(state.generateSuccessor(currentAgent, action), nextAgent, currentDepth, action)[0] for action in actions]
-                minval = min(scores)
-                v = minval
-                # a = minval[1]
-                a = actions[scores.index(v)]
-                print(f"    minval: {minval}")
-                # for action in actions:
-                #     v, a = min(v, minValue(state.generateSuccessor(currentAgent, action), nextAgent, currentDepth), key=itemgetter(0))
-            # print(f"ghost {currentAgent} going {action}")               
             
-            print(f"MIN returning {v} and {a}")
+            nextAgent = currentAgent + 1    #   index of next agent
+            if nextAgent == numAgents:
+                nextAgent = 0               #   resets agent index to pacman
+                currentDepth += 1           #   keeping track of the depth explored
+
+            actions = state.getLegalActions(currentAgent)
+
+            if currentDepth == self.depth and currentAgent == numAgents - 1:
+                #   max depth reached, evaluating successor states    
+                scores = [self.evaluationFunction(state.generateSuccessor(currentAgent, action)) for action in actions]         
+            else:
+                #   gets a list of scores of the successor states depending on the agent
+                scores =[maxValue(state.generateSuccessor(currentAgent, action), nextAgent, currentDepth, action)[0] for action in actions] if nextAgent == 0 else [minValue(state.generateSuccessor(currentAgent, action), nextAgent, currentDepth, action)[0] for action in actions]
+     
+            v = min(scores)
+            a = actions[scores.index(v)]  
+            
             return v, a
 
-        value, action = maxValue(gameState, 0, 0, None)
-        print("="*30, value, "+", action, "="*20)
+        _, action = maxValue(gameState, 0, 0, None)
+        
         return action
         
-        # def minimaxValue(currentDepth, currentState: GameState, agentIndex):
-            
-        #     depth = 1
-                
-            # if currentState.isWin() or currentState.isLose():
-            #     return self.evaluationFunction(currentState)
-            
-            # if agentIndex == numAgents - 1 :
-            #     agentIndex = -1
-            #     currentDepth += 1
-            
-            # legalActions = currentState.getLegalActions(agentIndex)
-            
-            # if currentDepth == self.depth and agentIndex == -1:
-            #     states = [currentState.generateSuccessor(numAgents - 1, action) for action in legalActions]
-            #     print("base case: ", [self.evaluationFunction(state) for state in states])
-            #     return min([self.evaluationFunction(state) for state in states])
-            
-            # # print(legalActions)
-            # if(agentIndex == 0):
-            #     maxl = [minimaxValue(currentDepth, currentState.generateSuccessor(agentIndex, action), agentIndex+1) for action in legalActions]
-            #     maxScore = max(maxl)
-            #     print( currentState.getLegalActions(),agentIndex, " max: ", maxl)
-            #     return maxScore
-            # else:
-            #     minl = [minimaxValue(currentDepth, currentState.generateSuccessor(agentIndex, action), agentIndex+1) for action in legalActions]
-            #     minScore = min(minl)
-            #     print(currentState.getLegalActions(), agentIndex, " Min: ", minl)
-            #     return minScore 
-                            
-        
-        # l = [minimaxValue(0, gameState.generateSuccessor(0, action), 1) for action in gameState.getLegalActions(0)]
-        # return l.index(max(l))
-    
-        util.raiseNotDefined()
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
     """
