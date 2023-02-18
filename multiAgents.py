@@ -216,6 +216,104 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         """
         "*** YOUR CODE HERE ***"
         util.raiseNotDefined()
+        action, score = self.getBestActionAndScore(gameState, 0, 0, float("-inf"), float("inf"))
+
+        # Return the action from result
+        return action
+        #util.raiseNotDefined()
+
+    def getBestActionAndScore(self, gameState, agentIndex, depth, alpha, beta):
+        """
+        Returns value as pair of [action, score] based on the different cases:
+        1. Terminal state
+        2. Max-agent
+        3. Min-agent
+        """
+        # Terminal states:
+        if len(gameState.getLegalActions(agentIndex)) == 0 or depth == self.depth:
+            return "", gameState.getScore()
+
+        # Max-agent: Pacman has index = 0
+        if agentIndex == 0:
+            return self.maxValue(gameState, agentIndex, depth, alpha, beta)
+
+        # Min-agent: Ghost has index > 0
+        else:
+            return self.minValue(gameState, agentIndex, depth, alpha, beta)
+
+    def maxValue(self, game_state, agentIndex, depth, alpha, beta):
+        """
+        Returns the max utility action-score for max-agent with alpha-beta pruning
+        """
+        legalActions = game_state.getLegalActions(agentIndex)
+        maxValue = float("-inf")
+        maxAction = ""
+
+        for action in legalActions:
+            successor = game_state.generateSuccessor(agentIndex, action)
+            successor_index = agentIndex + 1
+            successor_depth = depth
+
+            # Update the successor agent's index and depth if it's pacman
+            if successor_index == game_state.getNumAgents():
+                successor_index = 0
+                successor_depth += 1
+
+            # Calculate the action-score for the current successor
+            current_action, current_value \
+                = self.getBestActionAndScore(successor, successor_index, successor_depth, alpha, beta)
+
+            # Update max_value and max_action for maximizer agent
+            if current_value > maxValue:
+                maxValue = current_value
+                maxAction = action
+
+            # Update alpha value for current maximizer
+            alpha = max(alpha, maxValue)
+
+            # Pruning: Returns max_value because next possible max_value(s) of maximizer
+            # can get worse for beta value of minimizer when coming back up
+            if maxValue > beta:
+                return maxAction, maxValue
+
+        return maxAction, maxValue
+
+    def minValue(self, game_state, agentIndex, depth, alpha, beta):
+        """
+        Returns the min utility action-score for min-agent with alpha-beta pruning
+        """
+        legalActions = game_state.getLegalActions(agentIndex)
+        minValue = float("inf")
+        minAction = ""
+
+        for action in legalActions:
+            successor = game_state.generateSuccessor(agentIndex, action)
+            successor_index = agentIndex + 1
+            successor_depth = depth
+
+            # Update the successor agent's index and depth if it's pacman
+            if successor_index == game_state.getNumAgents():
+                successor_index = 0
+                successor_depth += 1
+
+            # Calculate the action-score for the current successor
+            current_action, current_value \
+                = self.getBestActionAndScore(successor, successor_index, successor_depth, alpha, beta)
+
+            # Update min_value and min_action for minimizer agent
+            if current_value < minValue:
+                minValue = current_value
+                minAction = action
+
+            # Update beta value for current minimizer
+            beta = min(beta, minValue)
+
+            # Pruning: Returns min_value because next possible min_value(s) of minimizer
+            # can get worse for alpha value of maximizer when coming back up
+            if minValue < alpha:
+                return minAction, minValue
+
+        return minAction, minValue    
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
     """
