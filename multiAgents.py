@@ -215,105 +215,67 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         Returns the minimax action using self.depth and self.evaluationFunction
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
-        action, score = self.getBestActionAndScore(gameState, 0, 0, float("-inf"), float("inf"))
 
-        # Return the action from result
+        numAgents = gameState.getNumAgents()
+        print(f"num agents : {numAgents}")
+        def maxValue(state: GameState, currentAgent, currentDepth, actionTaken, alpha, beta):
+            # print(f"Max - depth: {currentDepth} agent: {currentAgent}")
+            #   terminal test
+            if state.isWin() or state.isLose():
+                return self.evaluationFunction(state), actionTaken
+
+            if currentDepth == self.depth:
+                return self.evaluationFunction(state), None
+                            
+            maxScore = -float("inf")
+            bestMove = None
+            nextAgent = currentAgent + 1    #   index of next agent
+            actions = state.getLegalActions(currentAgent)
+            #   gets a list of scores of the successor states
+            for action in actions:
+                newScore, _ = minValue(state.generateSuccessor(currentAgent, action), nextAgent, currentDepth, action, alpha, beta)
+                if newScore > maxScore:
+                    maxScore = newScore
+                    bestMove = action
+                    alpha = max(alpha, maxScore)
+                if maxScore >= beta and alpha != beta:
+                    return maxScore, bestMove
+            
+            return maxScore, bestMove
+
+        def minValue(state: GameState, currentAgent, currentDepth, actionTaken, alpha, beta):
+            # print(f"Min - depth: {currentDepth} agent: {currentAgent}")
+            #   terminal test
+            if state.isWin() or state.isLose():
+                return self.evaluationFunction(state), actionTaken
+            
+            nextAgent = currentAgent + 1    #   index of next agent
+            if nextAgent == numAgents:
+                nextAgent = 0               #   resets agent index to pacman (max agent)
+                currentDepth += 1           #   keeping track of the depth explored
+
+            actions = state.getLegalActions(currentAgent)
+            minScore = float("inf")
+            bestMove = None
+            
+            for action in actions:
+                newScore, _ = maxValue(state.generateSuccessor(currentAgent, action), nextAgent, currentDepth, action, alpha, beta) if nextAgent == 0 else \
+                    minValue(state.generateSuccessor(currentAgent, action), nextAgent, currentDepth, action, alpha, beta)
+                if newScore < minScore:
+                    minScore = newScore
+                    bestMove = action
+                    beta = min(beta, minScore)
+                if minScore <= alpha and alpha != beta:
+                    return minScore, bestMove
+                
+            return minScore, bestMove
+    
+
+        _, action = maxValue(gameState, 0, 0, None, -float("inf"), float("inf"))
+        
         return action
-        #util.raiseNotDefined()
-
-    def getBestActionAndScore(self, gameState, agentIndex, depth, alpha, beta):
-        """
-        Returns value as pair of [action, score] based on the different cases:
-        1. Terminal state
-        2. Max-agent
-        3. Min-agent
-        """
-        # Terminal states:
-        if len(gameState.getLegalActions(agentIndex)) == 0 or depth == self.depth:
-            return "", gameState.getScore()
-
-        # Max-agent: Pacman has index = 0
-        if agentIndex == 0:
-            return self.maxValue(gameState, agentIndex, depth, alpha, beta)
-
-        # Min-agent: Ghost has index > 0
-        else:
-            return self.minValue(gameState, agentIndex, depth, alpha, beta)
-
-    def maxValue(self, game_state, agentIndex, depth, alpha, beta):
-        """
-        Returns the max utility action-score for max-agent with alpha-beta pruning
-        """
-        legalActions = game_state.getLegalActions(agentIndex)
-        maxValue = float("-inf")
-        maxAction = ""
-
-        for action in legalActions:
-            successor = game_state.generateSuccessor(agentIndex, action)
-            successor_index = agentIndex + 1
-            successor_depth = depth
-
-            # Update the successor agent's index and depth if it's pacman
-            if successor_index == game_state.getNumAgents():
-                successor_index = 0
-                successor_depth += 1
-
-            # Calculate the action-score for the current successor
-            current_action, current_value \
-                = self.getBestActionAndScore(successor, successor_index, successor_depth, alpha, beta)
-
-            # Update max_value and max_action for maximizer agent
-            if current_value > maxValue:
-                maxValue = current_value
-                maxAction = action
-
-            # Update alpha value for current maximizer
-            alpha = max(alpha, maxValue)
-
-            # Pruning: Returns max_value because next possible max_value(s) of maximizer
-            # can get worse for beta value of minimizer when coming back up
-            if maxValue > beta:
-                return maxAction, maxValue
-
-        return maxAction, maxValue
-
-    def minValue(self, game_state, agentIndex, depth, alpha, beta):
-        """
-        Returns the min utility action-score for min-agent with alpha-beta pruning
-        """
-        legalActions = game_state.getLegalActions(agentIndex)
-        minValue = float("inf")
-        minAction = ""
-
-        for action in legalActions:
-            successor = game_state.generateSuccessor(agentIndex, action)
-            successor_index = agentIndex + 1
-            successor_depth = depth
-
-            # Update the successor agent's index and depth if it's pacman
-            if successor_index == game_state.getNumAgents():
-                successor_index = 0
-                successor_depth += 1
-
-            # Calculate the action-score for the current successor
-            current_action, current_value \
-                = self.getBestActionAndScore(successor, successor_index, successor_depth, alpha, beta)
-
-            # Update min_value and min_action for minimizer agent
-            if current_value < minValue:
-                minValue = current_value
-                minAction = action
-
-            # Update beta value for current minimizer
-            beta = min(beta, minValue)
-
-            # Pruning: Returns min_value because next possible min_value(s) of minimizer
-            # can get worse for alpha value of maximizer when coming back up
-            if minValue < alpha:
-                return minAction, minValue
-
-        return minAction, minValue    
+      
+        
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
     """
